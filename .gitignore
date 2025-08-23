@@ -4,6 +4,7 @@
 .github/
 checkpoints/
 outputs/
+patch_embed_align/
 
 # Byte-compiled / optimized / DLL files
 **/__pycache__/
