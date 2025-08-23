@@ -1,0 +1,21 @@
+defaults:
+  - model: dca_seg
+  - dataset: geobench_cashew
+  # - _self_
+
+
+# Experiment parameters
+lr: 1e-4
+batch_size: 16
+weight_decay: 0.0001
+num_workers: 8
+pin_mem: true
+num_gpus: 2
+strategy: null
+epochs: 30
+warmup_epochs: 5
+seed: 42
+output_dir: ${oc.env:PROJECT_DIR}/outputs
+task: segmentation
+resume: null
+size: base

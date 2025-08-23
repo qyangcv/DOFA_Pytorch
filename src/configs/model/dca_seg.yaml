@@ -1,0 +1,9 @@
+model_type: dca
+size: base
+image_resolution: 224
+additional_params: {}
+embed_dim: 768
+pretrained_path: ${oc.env:PROJECT_DIR}/checkpoints/base/dca_base.pth
+full_finetune: true
+freeze_teacher: true
+task: segmentation

@@ -1,0 +1,32 @@
+defaults:
+  - geobench
+
+dataset_type: geobench
+benchmark_name: segmentation_v1.0
+dataset_name: m-cashew-plant
+task: segmentation
+data_path: ${oc.env:GEO_BENCH_DIR}
+band_names:
+  - "02 - Blue"
+  - "03 - Green"
+  - "04 - Red"
+  - "05 - Vegetation Red Edge"
+  - "06 - Vegetation Red Edge"
+  - "07 - Vegetation Red Edge"
+  - "08 - NIR"
+  - "11 - SWIR"
+  - "12 - SWIR"
+band_wavelengths:
+  - 0.49
+  - 0.56
+  - 0.665
+  - 0.705
+  - 0.74
+  - 0.783
+  - 0.842
+  - 1.61
+  - 2.19
+num_classes: 7
+multilabel: false
+num_channels: 9
+image_resolution: 224
