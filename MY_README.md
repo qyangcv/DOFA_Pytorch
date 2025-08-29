@@ -5,7 +5,7 @@ Refer [README.md](README.md).
 
 
 > Aug 29, 2025
-- 修改 [dca_wrapper.py](src/foundation_models/dca_wrapper.py) ，`DCASegmentation.loss()`新增 `affinity matrix l2 loss`和`random projection l2 loss`
+- 修改 [dca_wrapper.py](src/foundation_models/dca_wrapper.py) ，`DCASegmentation.loss()` 新增 `affinity matrix l2 loss`和`random projection l2 loss`
 - 新增 [visualize/plot.py](visualize/plot.py)，`pca_with_upsample()` 使用bilinear插值和PCA降维得到可视化特征图
 
 
