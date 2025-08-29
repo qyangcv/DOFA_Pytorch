@@ -49,9 +49,9 @@ class DCASegmentation(LightningTask):
         return out
 
     def loss(self, outputs, labels):
-        loss_type = self.model_config.get("loss_type", "affinity_l2")
+        loss_type = self.model_config.get("loss_type", "l2")
         out_teacher, out_student = outputs[0], outputs[1]
-        if loss_type is "direct_l2":
+        if loss_type is "l2":
             return F.mse_loss(out_teacher, out_student)
         elif loss_type is "affinity_l2":
             affinity_teacher = self.compute_affinity_matrix(out_teacher)
@@ -64,7 +64,7 @@ class DCASegmentation(LightningTask):
             proj_student = torch.einsum('bnd,df->bnf', out_student, random_proj)
             return F.mse_loss(proj_teacher, proj_student)
         elif loss_type is "mixed":
-            pass
+            raise NotImplementedError("`mixed` loss not implemented yet")
         else:
             raise ValueError(f"`loss_type` {loss_type} not defined")
         

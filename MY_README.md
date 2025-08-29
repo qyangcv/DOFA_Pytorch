@@ -1,7 +1,16 @@
 ## Basic info
 Refer [README.md](README.md).
 
-## 改进
+## Change Log
+
+
+> Aug 29, 2025
+- 修改 [dca_wrapper.py](src/foundation_models/dca_wrapper.py) ，`DCASegmentation.loss()`新增 `affinity matrix l2 loss`和`random projection l2 loss`
+- 新增 [visualize/plot.py](visualize/plot.py)，`pca_with_upsample()` 使用bilinear插值和PCA降维得到可视化特征图
+
+
+> Aug 23, 2025
+
 **训练文件**: [src/my_train.py](src/my_train.py)
 
 **配置文件**:
