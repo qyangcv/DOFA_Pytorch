@@ -2,7 +2,9 @@ import datetime
 import os
 from pathlib import Path
 import warnings
-from lightning.pytorch.callbacks import ModelCheckpoint, LearningRateMonitor
+import json
+import matplotlib.pyplot as plt
+from lightning.pytorch.callbacks import ModelCheckpoint, LearningRateMonitor, Callback
 from lightning.pytorch.loggers import MLFlowLogger
 from lightning import Trainer
 from lightning.pytorch.strategies import DDPStrategy
@@ -12,9 +14,12 @@ from factory import create_model
 import hydra
 from omegaconf import DictConfig
 
-warnings.filterwarnings("ignore", category=DeprecationWarning)
-warnings.filterwarnings("ignore", category=UserWarning)
-warnings.filterwarnings("ignore")
+from callbacks import (
+    LossLogger, save_loss, plot_loss
+)
+# warnings.filterwarnings("ignore", category=DeprecationWarning)
+# warnings.filterwarnings("ignore", category=UserWarning)
+# warnings.filterwarnings("ignore")
 
 
 def print_trainable_parameters(model):
@@ -39,9 +44,11 @@ def main(cfg: DictConfig):
 
     print(cfg)
 
-    # Create output directory
-    Path(cfg.output_dir).mkdir(parents=True, exist_ok=True)
-
+    # Create experiment directory
+    exp_time = datetime.datetime.now().strftime('%m%d_%H%M')
+    exp_dir = os.path.join(cfg.output_dir, f"exp_{exp_time}")
+    Path(exp_dir).mkdir(parents=True, exist_ok=True)
+    
     # Scale learning rate for multi-GPU
     cfg.lr *= cfg.num_gpus
 
@@ -50,40 +57,31 @@ def main(cfg: DictConfig):
     mlf_logger = MLFlowLogger(
         experiment_name=experiment_name,
         run_name=f"{experiment_name}_run_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}",
-        tracking_uri=f"file:{os.path.join(cfg.output_dir, 'mlruns')}",
+        tracking_uri=f"file:{os.path.join(exp_dir, 'mlruns')}",
     )
 
     # Callbacks
     model_monitor = "val_loss"
+    loss_logger = LossLogger()
     callbacks = [
         ModelCheckpoint(
-            dirpath=os.path.join(cfg.output_dir, "checkpoints"),
+            dirpath=os.path.join(exp_dir, "checkpoints"),
             filename="best_model-{epoch}",
             monitor=model_monitor,
             mode="min",
             save_last=True,
         ),
         LearningRateMonitor(logging_interval="epoch"),
+        loss_logger,
     ]
 
-    # Initialize trainer
-    if cfg.strategy == "ddp" and cfg.num_gpus > 1:
-        trainer = Trainer(
-            logger=mlf_logger,
-            callbacks=callbacks,
-            strategy=DDPStrategy(find_unused_parameters=False),
-            devices=cfg.num_gpus,
-            max_epochs=cfg.epochs,
-            num_sanity_val_steps=0,
-        )
-    else:
-        trainer = Trainer(
-            logger=mlf_logger,
-            callbacks=callbacks,
-            devices=cfg.num_gpus,
-            max_epochs=cfg.epochs,
-            num_sanity_val_steps=0,
-        )
+    trainer = Trainer(
+        logger=mlf_logger,
+        callbacks=callbacks,
+        devices=cfg.num_gpus,
+        max_epochs=cfg.epochs,
+        num_sanity_val_steps=0,
+    )
 
     # Initialize data module
     # cfg.dataset.image_resolution = cfg.model.image_resolution
@@ -105,8 +103,12 @@ def main(cfg: DictConfig):
     # Test
     best_checkpoint_path = callbacks[0].best_model_path
     trainer.test(model, data_module, ckpt_path=best_checkpoint_path)
+    
+    # Save and plot losses
+    save_loss(loss_logger, exp_dir)
+    plot_loss(loss_logger, exp_dir)
 
 
 if __name__ == "__main__":
-    os.environ["PROJECT_DIR"] = os.getenv("PROJECT_DIR", str(Path.cwd()))
+    os.environ["PROJECT_DIR"] = os.getenv("PROJECT_DIR", "/data1/yangquan/DOFA-pytorch")
     main()
